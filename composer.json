@@ -1,0 +1,23 @@
+{
+    "name": "francerz/php-oauth2-client",
+    "description": "Client side OAuth 2.0 Authorization Framework library",
+    "keywords": ["oauth2", "psr-7"],
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Francerz\\OAuth2\\Client\\" : "src"
+        }
+    },
+    "require": {
+        "francerz/php-http-tools": "^0.2",
+        "psr/http-message": "^1.0",
+        "francerz/php-power-data": "^0.1.0",
+        "psr/http-client": "^1.0",
+        "francerz/php-oauth2-core": "^0.1.0"
+
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.2",
+        "francerz/php-http": "^0.2"
+    }
+}
