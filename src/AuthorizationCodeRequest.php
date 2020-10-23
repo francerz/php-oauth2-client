@@ -76,7 +76,7 @@ class AuthorizationCodeRequest
         if (!empty($this->scopes)) {
             $params['scope'] = join(' ', $this->scopes);
         }
-        if (isset($this->state)) {
+        if (!empty($this->state)) {
             $params['state'] = $this->state;
         }
 

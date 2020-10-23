@@ -56,24 +56,12 @@ class RedeemCodeRequestBuilder
 
         $uri = $this->authClient->getTokenEndpoint();
         
-        $request = $this->authClient->getHttpFactory()->getRequestFactory()->createRequest(Methods::POST, $uri);
+        $request = $this->authClient->getHttpFactory()->getRequestFactory()
+            ->createRequest(Methods::POST, $uri);
         $requestBody = array(
             'grant_type'=> TokenRequestGrantTypes::AUTHORIZATION_CODE,
             'code'      => $this->code,
         );
-
-        if ($this->authClient->isBodyAuthenticationPreferred()) {
-            $requestBody['client_id'] = $this->authClient->getClientId();
-            $requestBody['client_secret'] = $this->authClient->getClientSecret();
-        } else {
-            $request = $request->withHeader(
-                'Authorization',
-                (string)new BasicAuthorizationHeader(
-                    $this->authClient->getClientId(),
-                    $this->authClient->getClientSecret()
-                )
-            );
-        }
         
         $callbackEndpoint = $this->authClient->getCallbackEndpoint();
         if (isset($callbackEndpoint)) {
