@@ -31,7 +31,7 @@ class AuthClient
     private $callbackEndpoint; // UriInterface
 
     private $checkStateHandler; // callback
-    private $accessTokenRefreshHandler; // callback
+    private $accessTokenChangedHandler; // callback
 
     private $accessToken;
 
@@ -128,8 +128,8 @@ class AuthClient
     public function setAccessToken(AccessToken $accessToken, bool $fireCallback = false)
     {
         $this->accessToken = $accessToken;
-        if ($fireCallback) {
-            call_user_func($this->accessTokenRefreshHandler, $accessToken);
+        if ($fireCallback && is_callable($this->accessTokenChangedHandler)) {
+            call_user_func($this->accessTokenChangedHandler, $accessToken);
         }
     }
 
@@ -168,13 +168,13 @@ class AuthClient
         $this->checkStateHandler = $handler;
     }
 
-    public function setAccessTokenRefreshHandler(callable $handler)
+    public function setAccessTokenChangedHandler(callable $handler)
     {
         if (!Functions::testSignature($handler, [AccessToken::class])) {
             throw new InvalidArgumentException('Function expected signature is: (AccessToken $accessToken) : void');
         }
 
-        $this->accessTokenRefreshHandler = $handler;
+        $this->accessTokenChangedHandler = $handler;
     }
     #endregion
     
