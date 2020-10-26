@@ -1,5 +1,5 @@
 {
-    "name": "francerz/php-oauth2-client",
+    "name": "francerz/oauth2-client",
     "description": "Client side OAuth 2.0 Authorization Framework library",
     "keywords": ["oauth2", "psr-7"],
     "license": "MIT",
