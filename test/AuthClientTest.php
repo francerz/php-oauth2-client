@@ -1,12 +1,12 @@
 <?php
 
-use Francerz\Http\Client;
-use Francerz\Http\Constants\MediaTypes;
-use Francerz\Http\Constants\Methods;
+use Francerz\Http\Client as HttpClient;
 use Francerz\Http\HttpFactory;
-use Francerz\Http\Tools\HttpFactoryManager;
-use Francerz\Http\Tools\MessageHelper;
-use Francerz\Http\Tools\UriHelper;
+use Francerz\Http\Utils\Constants\MediaTypes;
+use Francerz\Http\Utils\Constants\Methods;
+use Francerz\Http\Utils\HttpFactoryManager;
+use Francerz\Http\Utils\MessageHelper;
+use Francerz\Http\Utils\UriHelper;
 use Francerz\OAuth2\AccessToken;
 use Francerz\OAuth2\AuthorizeRequestTypes;
 use Francerz\OAuth2\Client\AuthClient;
@@ -36,7 +36,7 @@ class AuthClientTest extends TestCase
     {
         $authClient = new AuthClient(
             $this->httpFactory,
-            new Client(),
+            new HttpClient(),
             '0123456789abcdef',
             '4j8zc7h8kalipt69mqd1id9q',
             'https://oauth2.server.com/token',

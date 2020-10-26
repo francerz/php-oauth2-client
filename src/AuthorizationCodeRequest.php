@@ -2,7 +2,7 @@
 
 namespace Francerz\OAuth2\Client;
 
-use Francerz\Http\Tools\UriHelper;
+use Francerz\Http\Utils\UriHelper;
 use Francerz\OAuth2\AuthorizeRequestTypes;
 use Psr\Http\Message\UriInterface;
 

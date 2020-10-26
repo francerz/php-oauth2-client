@@ -2,12 +2,12 @@
 
 namespace Francerz\OAuth2\Client;
 
-use Francerz\Http\Constants\MediaTypes;
-use Francerz\Http\Constants\Methods;
-use Francerz\Http\Headers\BasicAuthorizationHeader;
-use Francerz\Http\Tools\HttpFactoryManager;
-use Francerz\Http\Tools\MessageHelper;
-use Francerz\Http\Tools\UriHelper;
+use Francerz\Http\Utils\Constants\MediaTypes;
+use Francerz\Http\Utils\Constants\Methods;
+use Francerz\Http\Utils\Headers\BasicAuthorizationHeader;
+use Francerz\Http\Utils\HttpFactoryManager;
+use Francerz\Http\Utils\MessageHelper;
+use Francerz\Http\Utils\UriHelper;
 use Francerz\OAuth2\AccessToken;
 use Francerz\OAuth2\TokenRequestGrantTypes;
 use Francerz\PowerData\Functions;

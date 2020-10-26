@@ -2,10 +2,9 @@
 
 namespace Francerz\OAuth2\Client;
 
-use Francerz\Http\Constants\MediaTypes;
-use Francerz\Http\Constants\Methods;
-use Francerz\Http\Headers\BasicAuthorizationHeader;
-use Francerz\Http\Tools\MessageHelper;
+use Francerz\Http\Utils\Constants\MediaTypes;
+use Francerz\Http\Utils\Constants\Methods;
+use Francerz\Http\Utils\MessageHelper;
 use Francerz\OAuth2\Client\AuthClient;
 use Francerz\OAuth2\TokenRequestGrantTypes;
 use Psr\Http\Message\RequestInterface;
