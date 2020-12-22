@@ -32,8 +32,10 @@ class AuthClient
 
     private $checkStateHandler; // callback
     private $accessTokenChangedHandler; // callback
+    private $clientAccessTokenChangedHandler; // callback
 
     private $accessToken;
+    private $clientAccessToken;
 
     private $preferBodyAuthenticationFlag = false;
 
@@ -138,6 +140,19 @@ class AuthClient
         return $this->accessToken;
     }
 
+    public function setClientAccessToken(AccessToken $accessToken, bool $fireCallback = false)
+    {
+        $this->clientAccessToken = $accessToken;
+        if ($fireCallback && is_callable($this->clientAccessTokenChangedHandler)) {
+            call_user_func($this->clientAccessTokenChangedHandler, $accessToken);
+        }
+    }
+
+    public function getClientAccessToken() : ?AccessToken
+    {
+        return $this->clientAccessToken;
+    }
+
     public function preferBodyAuthentication(bool $prefer)
     {
         $this->preferBodyAuthenticationFlag = $prefer;
@@ -217,15 +232,6 @@ class AuthClient
         return $authCodeReq->getRequestUri();
     }
 
-    public function handleCallbackRequest(RequestInterface $request)
-    {
-        $fetchRequest = $this->getFetchAccessTokenWithCodeRequest($request);
-        $fetchRequest = $this->embedRequestClientCredentials($fetchRequest);
-        $response = $this->httpClient->sendRequest($fetchRequest);
-        $accessToken = $this->getAccessTokenFromResponse($response);
-        $this->setAccessToken($accessToken, true);
-    }
-
     private function getFetchAccessTokenWithCodeRequest(RequestInterface $request) : RequestInterface
     {
         $params = UriHelper::getQueryParams($request->getUri());
@@ -250,27 +256,18 @@ class AuthClient
         return $redeemReq->getRequest();
     }
 
-
-    public function fetchAccessTokenWithRefreshToken(string $refreshToken)
+    public function handleCallbackRequest(RequestInterface $request) : AccessToken
     {
-        $fetchRequest = $this->getFetchAccessTokenWithRefreshTokenRequest($refreshToken);
+        $fetchRequest = $this->getFetchAccessTokenWithCodeRequest($request);
         $fetchRequest = $this->embedRequestClientCredentials($fetchRequest);
         $response = $this->httpClient->sendRequest($fetchRequest);
         $accessToken = $this->getAccessTokenFromResponse($response);
-        if (is_null($accessToken->getRefreshToken())) {
-            $accessToken->setRefreshToken($refreshToken);
-        }
         $this->setAccessToken($accessToken, true);
         return $accessToken;
     }
 
-    private function getFetchAccessTokenWithRefreshTokenRequest(string $refreshToken) : RequestInterface
+    private function getFetchAccessTokenRequest(array $bodyParams = []) : RequestInterface
     {
-        $bodyParams = array(
-            'grant_type' => TokenRequestGrantTypes::REFRESH_TOKEN,
-            'refresh_token' => $refreshToken
-        );
-
         $requestFactory = $this->httpFactory->getRequestFactory();
         $request = $requestFactory->createRequest(Methods::POST, $this->tokenEndpoint);
 
@@ -281,6 +278,44 @@ class AuthClient
         );
 
         return $request;
+    }
+
+    private function getFetchClientAccessTokenRequest() : RequestInterface
+    {
+        return $this->getFetchAccessTokenRequest(array(
+            'grant_type' => TokenRequestGrantTypes::CLIENT_CREDENTIALS
+        ));
+    }
+
+    public function fetchClientAccessToken() : AccessToken
+    {
+        $fetchRequest = $this->getFetchClientAccessTokenRequest();
+        $fetchRequest = $this->embedRequestClientCredentials($fetchRequest);
+        $response = $this->httpClient->sendRequest($fetchRequest);
+        $accessToken = $this->getAccessTokenFromResponse($response);
+        $this->setClientAccessToken($accessToken, true);
+        return $accessToken;
+    }
+
+    private function getFetchAccessTokenWithRefreshTokenRequest(string $refreshToken) : RequestInterface
+    {
+        return $this->getFetchAccessTokenRequest(array(
+            'grant_type' => TokenRequestGrantTypes::REFRESH_TOKEN,
+            'refresh_token' => $refreshToken
+        ));
+    }
+
+    public function fetchAccessTokenWithRefreshToken(string $refreshToken) : AccessToken
+    {
+        $fetchRequest = $this->getFetchAccessTokenWithRefreshTokenRequest($refreshToken);
+        $fetchRequest = $this->embedRequestClientCredentials($fetchRequest);
+        $response = $this->httpClient->sendRequest($fetchRequest);
+        $accessToken = $this->getAccessTokenFromResponse($response);
+        if (is_null($accessToken->getRefreshToken())) {
+            $accessToken->setRefreshToken($refreshToken);
+        }
+        $this->setAccessToken($accessToken, true);
+        return $accessToken;
     }
 
     private function refreshAccessToken()
@@ -308,5 +343,22 @@ class AuthClient
             $this->refreshAccessToken();
         }
         return $request->withHeader('Authorization', (string)$this->accessToken);
+    }
+
+    /**
+     * Binds Client AccessToken to RequestInterface object.
+     *
+     * @param RequestInterface $request
+     * @return RequestInterface|null
+     */
+    public function bindClientAccessToken(RequestInterface $request) : ?RequestInterface
+    {
+        if (!isset($this->clientAccessToken) ||
+            !$this->clientAccessToken instanceof AccessToken ||
+            $this->clientAccessToken->isExpired()
+        ) {
+            $this->fetchClientAccessToken();
+        }
+        return $request->withHeader('Authorization', (string)$this->clientAccessToken);
     }
 }

@@ -129,6 +129,32 @@ class AuthClientTest extends TestCase
         $this->assertEquals('https://example.com/oauth2/callback', $params['redirect_uri']);
     }
 
+    public function testGetClientAccessToken()
+    {
+        $authClient = $this->createAuthClient();
+
+        $request = static::callPrivateMethod(
+            $authClient,
+            'getFetchClientAccessTokenRequest'
+        );
+
+        if (!$request instanceof RequestInterface) return;
+
+        $this->assertEquals(Methods::POST, $request->getMethod());
+        $this->assertStringStartsWith(
+            MediaTypes::APPLICATION_X_WWW_FORM_URLENCODED,
+            $request->getHeaderLine('Content-Type')
+        );
+
+        $uri = $request->getUri();
+        $this->assertEquals('https', $uri->getScheme());
+        $this->assertEquals('oauth2.server.com', $uri->getHost());
+        $this->assertEquals('/token', $uri->getPath());
+
+        $params = MessageHelper::getContent($request);
+        $this->assertEquals(TokenRequestGrantTypes::CLIENT_CREDENTIALS, $params['grant_type']);
+    }
+
     public function testGetFetchAccessTokenWithRefreshTokenRequest()
     {
         $authClient = $this->createAuthClient();
