@@ -272,6 +272,7 @@ class AuthClient
         $requestFactory = $this->httpFactory->getRequestFactory();
         $request = $requestFactory->createRequest(Methods::POST, $this->tokenEndpoint);
 
+        MessageHelper::setHttpFactoryManager($this->httpFactory);
         $request = MessageHelper::withContent(
             $request,
             MediaTypes::APPLICATION_X_WWW_FORM_URLENCODED,
