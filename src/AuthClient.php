@@ -36,6 +36,7 @@ class AuthClient
 
     private $accessToken;
     private $clientAccessToken;
+    private $clientScopes;
 
     private $preferBodyAuthenticationFlag = false;
 
@@ -280,19 +281,26 @@ class AuthClient
         return $request;
     }
 
-    private function getFetchClientAccessTokenRequest() : RequestInterface
+    private function getFetchClientAccessTokenRequest(array $scopes = []) : RequestInterface
     {
         return $this->getFetchAccessTokenRequest(array(
-            'grant_type' => TokenRequestGrantTypes::CLIENT_CREDENTIALS
+            'grant_type' => TokenRequestGrantTypes::CLIENT_CREDENTIALS,
+            'scope' => join(' ', $scopes)
         ));
     }
 
-    public function fetchClientAccessToken() : AccessToken
+    public function fetchClientAccessToken(array $scopes = []) : AccessToken
     {
-        $fetchRequest = $this->getFetchClientAccessTokenRequest();
+        $scopes = array_unique(array_merge($this->clientScopes, $scopes));
+        $fetchRequest = $this->getFetchClientAccessTokenRequest($scopes);
         $fetchRequest = $this->embedRequestClientCredentials($fetchRequest);
         $response = $this->httpClient->sendRequest($fetchRequest);
         $accessToken = $this->getAccessTokenFromResponse($response);
+        if ($accessToken->hasParameter('scope')) {
+            $this->clientScopes = explode(' ', $accessToken->getParameter('scope'));
+        } else {
+            $this->clientScopes = $scopes;
+        }
         $this->setClientAccessToken($accessToken, true);
         return $accessToken;
     }
@@ -351,13 +359,13 @@ class AuthClient
      * @param RequestInterface $request
      * @return RequestInterface|null
      */
-    public function bindClientAccessToken(RequestInterface $request) : ?RequestInterface
+    public function bindClientAccessToken(RequestInterface $request, array $scopes = []) : ?RequestInterface
     {
         if (!isset($this->clientAccessToken) ||
             !$this->clientAccessToken instanceof AccessToken ||
             $this->clientAccessToken->isExpired()
         ) {
-            $this->fetchClientAccessToken();
+            $this->fetchClientAccessToken($scopes);
         }
         return $request->withHeader('Authorization', (string)$this->clientAccessToken);
     }
