@@ -192,6 +192,14 @@ class AuthClient
 
         $this->accessTokenChangedHandler = $handler;
     }
+
+    public function setClientAccessTokenChangedHandler(callable $handler)
+    {
+        if (!Functions::testSignature($handler, [AccessToken::class])) {
+            throw new InvalidArgumentException('Function expected signature is: (AccessToken $accessToken) : void');
+        }
+        $this->clientAccessTokenChangedHandler = $handler;
+    }
     #endregion
     
     private function getAccessTokenFromResponse(ResponseInterface $response) : AccessToken
