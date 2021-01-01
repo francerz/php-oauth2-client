@@ -36,7 +36,7 @@ class AuthClient
 
     private $accessToken;
     private $clientAccessToken;
-    private $clientScopes;
+    private $clientScopes = [];
 
     private $preferBodyAuthenticationFlag = false;
 
