@@ -73,7 +73,7 @@ class AuthClientTest extends TestCase
     {
         $authClient = $this->createAuthClient();
 
-        $uri = $authClient->getAuthorizationCodeRequestUri(['scope1', 'scope2'], 'aBcXyZ.123');
+        $uri = $authClient->getAuthorizationCodeRequestUri(['scope1', 'scope2', 'scope1'], 'aBcXyZ.123');
 
         $this->assertEquals('https', $uri->getScheme());
         $this->assertEquals('oauth2.server.com', $uri->getHost());

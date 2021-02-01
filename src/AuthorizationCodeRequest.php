@@ -4,6 +4,7 @@ namespace Francerz\OAuth2\Client;
 
 use Francerz\Http\Utils\UriHelper;
 use Francerz\OAuth2\AuthorizeRequestTypes;
+use Francerz\OAuth2\ScopeHelper;
 use Psr\Http\Message\UriInterface;
 
 class AuthorizationCodeRequest
@@ -38,13 +39,7 @@ class AuthorizationCodeRequest
     public function withAddedScope($scope_or_scopes) : AuthorizationCodeRequest
     {
         $new = clone $this;
-        if (is_array($scope_or_scopes)) {
-            foreach ($scope_or_scopes as $s) {
-                $new->scopes[] = $s;
-            }
-            return $new;
-        }
-        $new->scopes[] = $scope_or_scopes;
+        $new->scopes = ScopeHelper::merge($new->scopes, $scope_or_scopes);
         return $new;
     }
 
