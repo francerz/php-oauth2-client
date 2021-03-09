@@ -9,6 +9,7 @@ use Francerz\Http\Utils\HttpFactoryManager;
 use Francerz\Http\Utils\MessageHelper;
 use Francerz\Http\Utils\UriHelper;
 use Francerz\OAuth2\AccessToken;
+use Francerz\OAuth2\ScopeHelper;
 use Francerz\OAuth2\TokenRequestGrantTypes;
 use Francerz\PowerData\Functions;
 use InvalidArgumentException;
@@ -300,7 +301,7 @@ class AuthClient
 
     public function fetchClientAccessToken(array $scopes = []) : AccessToken
     {
-        $scopes = array_unique(array_merge($this->clientScopes, $scopes));
+        $scopes = ScopeHelper::merge($this->clientScopes, $scopes);
         $fetchRequest = $this->getFetchClientAccessTokenRequest($scopes);
         $fetchRequest = $this->embedRequestClientCredentials($fetchRequest);
         $response = $this->httpClient->sendRequest($fetchRequest);
