@@ -5,6 +5,7 @@ use Francerz\Http\HttpFactory;
 use Francerz\Http\Utils\Constants\MediaTypes;
 use Francerz\Http\Utils\Constants\Methods;
 use Francerz\Http\Utils\HttpFactoryManager;
+use Francerz\Http\Utils\HttpHelper;
 use Francerz\Http\Utils\MessageHelper;
 use Francerz\Http\Utils\UriHelper;
 use Francerz\OAuth2\AccessToken;
@@ -123,7 +124,7 @@ class AuthClientTest extends TestCase
         $this->assertEquals('oauth2.server.com', $uri->getHost());
         $this->assertEquals('/token', $uri->getPath());
 
-        $params = MessageHelper::getContent($request);
+        $params = HttpHelper::getContent($request);
         $this->assertEquals(TokenRequestGrantTypes::AUTHORIZATION_CODE, $params['grant_type']);
         $this->assertEquals('A1lfLISBC4BK', $params['code']);
         $this->assertEquals('https://example.com/oauth2/callback', $params['redirect_uri']);
@@ -151,7 +152,7 @@ class AuthClientTest extends TestCase
         $this->assertEquals('oauth2.server.com', $uri->getHost());
         $this->assertEquals('/token', $uri->getPath());
 
-        $params = MessageHelper::getContent($request);
+        $params = HttpHelper::getContent($request);
         $this->assertEquals(TokenRequestGrantTypes::CLIENT_CREDENTIALS, $params['grant_type']);
     }
 
@@ -178,7 +179,7 @@ class AuthClientTest extends TestCase
         $this->assertEquals('oauth2.server.com', $uri->getHost());
         $this->assertEquals('/token', $uri->getPath());
 
-        $params = MessageHelper::getContent($request);
+        $params = HttpHelper::getContent($request);
         $this->assertEquals(TokenRequestGrantTypes::REFRESH_TOKEN, $params['grant_type']);
         $this->assertEquals('xcag6ykryl8ocr1hrac6q4k2qlf3zm1a', $params['refresh_token']);
     }
@@ -199,7 +200,8 @@ class AuthClientTest extends TestCase
             'scope1 scope2'
         );
 
-        $response = MessageHelper::withContent($response, MediaTypes::APPLICATION_JSON, $accessToken);
+        $httpHelper = new HttpHelper($this->httpFactory);
+        $response = $httpHelper->withContent($response, MediaTypes::APPLICATION_JSON, $accessToken);
 
         return $response;
     }

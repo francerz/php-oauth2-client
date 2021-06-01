@@ -6,7 +6,7 @@ use Francerz\Http\Utils\Constants\MediaTypes;
 use Francerz\Http\Utils\Constants\Methods;
 use Francerz\Http\Utils\Headers\BasicAuthorizationHeader;
 use Francerz\Http\Utils\HttpFactoryManager;
-use Francerz\Http\Utils\MessageHelper;
+use Francerz\Http\Utils\HttpHelper;
 use Francerz\Http\Utils\UriHelper;
 use Francerz\OAuth2\AccessToken;
 use Francerz\OAuth2\ScopeHelper;
@@ -24,6 +24,7 @@ class AuthClient
 {
     private $httpFactory;
     private $httpClient;
+    private $httpHelper;
 
     private $clientId; // string
     private $clientSecret; // string
@@ -51,6 +52,7 @@ class AuthClient
         $callbackEndpoint = null
     ) {
         $this->httpFactory = $httpFactory;
+        $this->httpHelper = new HttpHelper($httpFactory);
         $this->httpClient = $httpClient;
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
@@ -170,6 +172,11 @@ class AuthClient
         return $this->httpFactory;
     }
 
+    public function getHttpHelper() : HttpHelper
+    {
+        return $this->httpHelper;
+    }
+
     /**
      * Undocumented function
      *
@@ -205,8 +212,8 @@ class AuthClient
     
     private function getAccessTokenFromResponse(ResponseInterface $response) : AccessToken
     {
-        if (MessageHelper::isError($response)) {
-            $resp = MessageHelper::getContent($response);
+        if (HttpHelper::isError($response)) {
+            $resp = HttpHelper::getContent($response);
             throw new \Exception($resp->error.': '.PHP_EOL.$resp->error_description);
         }
 
@@ -216,10 +223,10 @@ class AuthClient
     private function embedRequestClientCredentials(RequestInterface $request) : RequestInterface
     {
         if ($this->preferBodyAuthenticationFlag) {
-            $bodyParams = MessageHelper::getContent($request);
+            $bodyParams = HttpHelper::getContent($request);
             $bodyParams['client_id'] = $this->getClientId();
             $bodyParams['client_secret'] = $this->getClientSecret();
-            $request = MessageHelper::withContent($request, MediaTypes::APPLICATION_X_WWW_FORM_URLENCODED, $bodyParams);
+            $request = $this->httpHelper->withContent($request, MediaTypes::APPLICATION_X_WWW_FORM_URLENCODED, $bodyParams);
         } else {
             $request = $request->withHeader(
                 'Authorization',
@@ -281,8 +288,7 @@ class AuthClient
         $requestFactory = $this->httpFactory->getRequestFactory();
         $request = $requestFactory->createRequest(Methods::POST, $this->tokenEndpoint);
 
-        MessageHelper::setHttpFactoryManager($this->httpFactory);
-        $request = MessageHelper::withContent(
+        $request = $this->httpHelper->withContent(
             $request,
             MediaTypes::APPLICATION_X_WWW_FORM_URLENCODED,
             $bodyParams

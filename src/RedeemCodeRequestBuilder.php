@@ -4,7 +4,6 @@ namespace Francerz\OAuth2\Client;
 
 use Francerz\Http\Utils\Constants\MediaTypes;
 use Francerz\Http\Utils\Constants\Methods;
-use Francerz\Http\Utils\MessageHelper;
 use Francerz\OAuth2\Client\AuthClient;
 use Francerz\OAuth2\TokenRequestGrantTypes;
 use Psr\Http\Message\RequestInterface;
@@ -67,8 +66,8 @@ class RedeemCodeRequestBuilder
             $requestBody['redirect_uri'] = (string)$callbackEndpoint;
         }
 
-        MessageHelper::setHttpFactoryManager($this->authClient->getHttpFactory());
-        $request = MessageHelper::withContent($request, MediaTypes::APPLICATION_X_WWW_FORM_URLENCODED, $requestBody);
+        $httpHelper = $this->authClient->getHttpHelper();
+        $request = $httpHelper->withContent($request, MediaTypes::APPLICATION_X_WWW_FORM_URLENCODED, $requestBody);
 
         return $request;
     }
