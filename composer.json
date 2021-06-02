@@ -11,12 +11,12 @@
     "require": {
         "psr/http-message": "^1.0",
         "psr/http-client": "^1.0",
-        "francerz/oauth2-core": "^0.2.0",
+        "francerz/oauth2-core": "^0.2",
         "francerz/php-power-data": "^0.1.0"
 
     },
     "require-dev": {
-        "francerz/http": "^0.2.2",
+        "francerz/http": "^0.3",
         "phpunit/phpunit": "^8.5"
     }
 }
