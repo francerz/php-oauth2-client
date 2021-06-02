@@ -33,10 +33,10 @@ class AuthClient
     private $callbackEndpoint; // UriInterface
 
     private $checkStateHandler; // callback
-    private $accessTokenChangedHandler; // callback
+    private $ownerAccessTokenChangedHandler; // callback
     private $clientAccessTokenChangedHandler; // callback
 
-    private $accessToken;
+    private $ownerAccessToken;
     private $clientAccessToken;
     private $clientScopes = [];
 
@@ -131,18 +131,41 @@ class AuthClient
         return $this->callbackEndpoint;
     }
 
+    /**
+     * @deprecated v0.2.9 Use setOwnerAccessToken instead
+     *
+     * @param AccessToken $accessToken
+     * @param boolean $fireCallback
+     * @return void
+     */
     public function setAccessToken(AccessToken $accessToken, bool $fireCallback = false)
     {
-        $this->accessToken = $accessToken;
-        if ($fireCallback && is_callable($this->accessTokenChangedHandler)) {
-            call_user_func($this->accessTokenChangedHandler, $accessToken);
+        $this->setOwnerAccessToken($accessToken, $fireCallback);
+    }
+
+    /**
+     * @deprecated v0.2.9 Use getOwnerAccessToken instead
+     *
+     * @return AccessToken|null
+     */
+    public function getAccessToken() : ?AccessToken
+    {
+        return $this->getOwnerAccessToken();
+    }
+
+    public function setOwnerAccessToken(AccessToken $accessToken, bool $fireCallback = false)
+    {
+        $this->ownerAccessToken = $accessToken;
+        if ($fireCallback && is_callable($this->ownerAccessTokenChangedHandler)) {
+            call_user_func($this->ownerAccessTokenChangedHandler, $accessToken);
         }
     }
 
-    public function getAccessToken() : ?AccessToken
+    public function getOwnerAccessToken() : ?AccessToken
     {
-        return $this->accessToken;
+        return $this->ownerAccessToken;
     }
+
 
     public function setClientAccessToken(AccessToken $accessToken, bool $fireCallback = false)
     {
@@ -192,13 +215,24 @@ class AuthClient
         $this->checkStateHandler = $handler;
     }
 
+    /**
+     * @deprecated v0.2.9 Use setOwnerAccessTokenChangedHandler instead 
+     *
+     * @param callable $handler
+     * @return void
+     */
     public function setAccessTokenChangedHandler(callable $handler)
+    {
+        $this->setOwnerAccessTokenChangedHandler($handler);
+    }
+
+    public function setOwnerAccessTokenChangedHandler(callable $handler)
     {
         if (!Functions::testSignature($handler, [AccessToken::class])) {
             throw new InvalidArgumentException('Function expected signature is: (AccessToken $accessToken) : void');
         }
 
-        $this->accessTokenChangedHandler = $handler;
+        $this->ownerAccessTokenChangedHandler = $handler;
     }
 
     public function setClientAccessTokenChangedHandler(callable $handler)
@@ -258,8 +292,9 @@ class AuthClient
         }
 
         if (array_key_exists('state', $params)) {
-            $csh = $this->checkStateHandler;
-            if (isset($csh) && !$csh($params['state'])) {
+            if (isset($this->checkStateHandler) && 
+                !call_user_func($this->checkStateHandler, $params['state'])
+            ) {
                 throw new \Exception('Failed state matching.');
             }
         }
@@ -279,7 +314,7 @@ class AuthClient
         $fetchRequest = $this->embedRequestClientCredentials($fetchRequest);
         $response = $this->httpClient->sendRequest($fetchRequest);
         $accessToken = $this->getAccessTokenFromResponse($response);
-        $this->setAccessToken($accessToken, true);
+        $this->setOwnerAccessToken($accessToken, true);
         return $accessToken;
     }
 
@@ -301,7 +336,7 @@ class AuthClient
     {
         return $this->getFetchAccessTokenRequest(array(
             'grant_type' => TokenRequestGrantTypes::CLIENT_CREDENTIALS,
-            'scope' => join(' ', $scopes)
+            'scope' => ScopeHelper::toString($scopes)
         ));
     }
 
@@ -312,11 +347,9 @@ class AuthClient
         $fetchRequest = $this->embedRequestClientCredentials($fetchRequest);
         $response = $this->httpClient->sendRequest($fetchRequest);
         $accessToken = $this->getAccessTokenFromResponse($response);
-        if ($accessToken->hasParameter('scope')) {
-            $this->clientScopes = explode(' ', $accessToken->getParameter('scope'));
-        } else {
-            $this->clientScopes = $scopes;
-        }
+        $this->clientScopes = $accessToken->hasParameter('scope') ?
+            ScopeHelper::toArray($accessToken->getParameter('scope')) :
+            $scopes;
         $this->setClientAccessToken($accessToken, true);
         return $accessToken;
     }
@@ -338,16 +371,16 @@ class AuthClient
         if (is_null($accessToken->getRefreshToken())) {
             $accessToken->setRefreshToken($refreshToken);
         }
-        $this->setAccessToken($accessToken, true);
+        $this->setOwnerAccessToken($accessToken, true);
         return $accessToken;
     }
 
     private function refreshAccessToken()
     {
-        if (is_null($this->accessToken)) {
+        if (is_null($this->ownerAccessToken)) {
             throw new RuntimeException('Cannot refresh token without access_token.');
         }
-        $refreshToken = $this->accessToken->getRefreshToken();
+        $refreshToken = $this->ownerAccessToken->getRefreshToken();
         if (is_null($refreshToken)) {
             throw new RuntimeException('No Refresh Token available.');
         }
@@ -360,13 +393,13 @@ class AuthClient
      */
     public function bindAccessToken(RequestInterface $request) : ?RequestInterface
     {
-        if (!isset($this->accessToken) || !$this->accessToken instanceof AccessToken) {
+        if (!isset($this->ownerAccessToken) || !$this->ownerAccessToken instanceof AccessToken) {
             throw new LogicException('No access token available');
         }
-        if ($this->accessToken->isExpired()) {
+        if ($this->ownerAccessToken->isExpired()) {
             $this->refreshAccessToken();
         }
-        return $request->withHeader('Authorization', (string)$this->accessToken);
+        return $request->withHeader('Authorization', (string)$this->ownerAccessToken);
     }
 
     /**
