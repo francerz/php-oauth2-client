@@ -9,9 +9,14 @@ use Psr\Http\Message\UriInterface;
 
 class AuthorizationCodeRequest
 {
-    private $authClient; // AuthClient
-    private $scopes = array(); // array
-    private $state; // string
+    /** @var AuthClient */
+    private $authClient;
+
+    /** @var string[] */
+    private $scopes = array();
+
+    /** @var string */
+    private $state;
 
     public function __construct(
         AuthClient $authClient = null
@@ -19,42 +24,42 @@ class AuthorizationCodeRequest
         $this->authClient = $authClient;
     }
 
-    public function getAuthClient() : AuthClient
+    public function getAuthClient(): AuthClient
     {
         return $this->authClient;
     }
 
-    public function withAuthClient(AuthClient $authClient) : AuthorizationCodeRequest
+    public function withAuthClient(AuthClient $authClient): AuthorizationCodeRequest
     {
         $new = clone $this;
         $new->authClient = $authClient;
         return $new;
     }
 
-    public function getScopes() : array
+    public function getScopes(): array
     {
         return $this->scopes;
     }
 
-    public function withAddedScope($scope_or_scopes) : AuthorizationCodeRequest
+    public function withAddedScope($scope_or_scopes): AuthorizationCodeRequest
     {
         $new = clone $this;
         $new->scopes = ScopeHelper::merge($new->scopes, $scope_or_scopes);
         return $new;
     }
 
-    public function withState(string $state) : AuthorizationCodeRequest
+    public function withState(string $state): AuthorizationCodeRequest
     {
         $new = clone $this;
         $new->state = $state;
         return $new;
     }
-    public function getState() : string
+    public function getState(): string
     {
         return $this->state;
     }
 
-    public function getRequestUri() : UriInterface
+    public function getRequestUri(): UriInterface
     {
         if (!isset($this->authClient)) {
             throw new \Exception("AuthClient not sets");
@@ -77,7 +82,7 @@ class AuthorizationCodeRequest
 
         $uri = $this->authClient->getAuthorizationEndpoint();
         $uri = UriHelper::withQueryParams($uri, $params);
-        
+
         return $uri;
     }
 }

@@ -1,8 +1,11 @@
+# Git default LF endlines
+* text=auto eol=lf
+
+# Export to package ignoring files
 /.gitattributes             export-ignore
 /.github                    export-ignore
 /.gitignore                 export-ignore
-/.phpunit.result.cache      export-ignore
+/*.cache                    export-ignore
 /.vscode                    export-ignore
-
 /test                       export-ignore
 /phpunit.xml                export-ignore

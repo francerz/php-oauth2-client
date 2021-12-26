@@ -68,7 +68,7 @@ class AuthClient
         $this->clientId = $clientId;
     }
 
-    public function getClientId() : string
+    public function getClientId(): string
     {
         return $this->clientId;
     }
@@ -77,8 +77,8 @@ class AuthClient
     {
         $this->clientSecret = $clientSecret;
     }
-    
-    public function getClientSecret() : string
+
+    public function getClientSecret(): string
     {
         return $this->clientSecret;
     }
@@ -94,7 +94,7 @@ class AuthClient
         }
     }
 
-    public function getAuthorizationEndpoint() : ?UriInterface
+    public function getAuthorizationEndpoint(): ?UriInterface
     {
         return $this->authorizationEndpoint;
     }
@@ -110,7 +110,7 @@ class AuthClient
         }
     }
 
-    public function getTokenEndpoint() : ?UriInterface
+    public function getTokenEndpoint(): ?UriInterface
     {
         return $this->tokenEndpoint;
     }
@@ -126,7 +126,7 @@ class AuthClient
         }
     }
 
-    public function getCallbackEndpoint() : ?UriInterface
+    public function getCallbackEndpoint(): ?UriInterface
     {
         return $this->callbackEndpoint;
     }
@@ -148,7 +148,7 @@ class AuthClient
      *
      * @return AccessToken|null
      */
-    public function getAccessToken() : ?AccessToken
+    public function getAccessToken(): ?AccessToken
     {
         return $this->getOwnerAccessToken();
     }
@@ -161,7 +161,7 @@ class AuthClient
         }
     }
 
-    public function getOwnerAccessToken() : ?AccessToken
+    public function getOwnerAccessToken(): ?AccessToken
     {
         return $this->ownerAccessToken;
     }
@@ -175,7 +175,7 @@ class AuthClient
         }
     }
 
-    public function getClientAccessToken() : ?AccessToken
+    public function getClientAccessToken(): ?AccessToken
     {
         return $this->clientAccessToken;
     }
@@ -185,17 +185,17 @@ class AuthClient
         $this->preferBodyAuthenticationFlag = $prefer;
     }
 
-    public function isBodyAuthenticationPreferred() : bool
+    public function isBodyAuthenticationPreferred(): bool
     {
         return $this->preferBodyAuthenticationFlag;
     }
 
-    public function getHttpFactory() : HttpFactoryManager
+    public function getHttpFactory(): HttpFactoryManager
     {
         return $this->httpFactory;
     }
 
-    public function getHttpHelper() : HttpHelper
+    public function getHttpHelper(): HttpHelper
     {
         return $this->httpHelper;
     }
@@ -216,7 +216,7 @@ class AuthClient
     }
 
     /**
-     * @deprecated v0.2.9 Use setOwnerAccessTokenChangedHandler instead 
+     * @deprecated v0.2.9 Use setOwnerAccessTokenChangedHandler instead
      *
      * @param callable $handler
      * @return void
@@ -243,24 +243,28 @@ class AuthClient
         $this->clientAccessTokenChangedHandler = $handler;
     }
     #endregion
-    
-    private function getAccessTokenFromResponse(ResponseInterface $response) : AccessToken
+
+    private function getAccessTokenFromResponse(ResponseInterface $response): AccessToken
     {
         if (HttpHelper::isError($response)) {
             $resp = HttpHelper::getContent($response);
-            throw new \Exception($resp->error.': '.PHP_EOL.$resp->error_description);
+            throw new \Exception($resp->error . ': ' . PHP_EOL . $resp->error_description);
         }
 
         return AccessToken::fromHttpMessage($response);
     }
 
-    private function embedRequestClientCredentials(RequestInterface $request) : RequestInterface
+    private function embedRequestClientCredentials(RequestInterface $request): RequestInterface
     {
         if ($this->preferBodyAuthenticationFlag) {
             $bodyParams = HttpHelper::getContent($request);
             $bodyParams['client_id'] = $this->getClientId();
             $bodyParams['client_secret'] = $this->getClientSecret();
-            $request = $this->httpHelper->withContent($request, MediaTypes::APPLICATION_X_WWW_FORM_URLENCODED, $bodyParams);
+            $request = $this->httpHelper->withContent(
+                $request,
+                MediaTypes::APPLICATION_X_WWW_FORM_URLENCODED,
+                $bodyParams
+            );
         } else {
             $request = $request->withHeader(
                 'Authorization',
@@ -274,7 +278,7 @@ class AuthClient
         return $request;
     }
 
-    public function getAuthorizationCodeRequestUri(array $scopes = [], string $state = '') : UriInterface
+    public function getAuthorizationCodeRequestUri(array $scopes = [], string $state = ''): UriInterface
     {
         $authCodeReq = new AuthorizationCodeRequest($this);
         $authCodeReq = $authCodeReq
@@ -283,7 +287,7 @@ class AuthClient
         return $authCodeReq->getRequestUri();
     }
 
-    private function getFetchAccessTokenWithCodeRequest(RequestInterface $request) : RequestInterface
+    private function getFetchAccessTokenWithCodeRequest(RequestInterface $request): RequestInterface
     {
         $params = UriHelper::getQueryParams($request->getUri());
 
@@ -292,7 +296,8 @@ class AuthClient
         }
 
         if (array_key_exists('state', $params)) {
-            if (isset($this->checkStateHandler) && 
+            if (
+                isset($this->checkStateHandler) &&
                 !call_user_func($this->checkStateHandler, $params['state'])
             ) {
                 throw new \Exception('Failed state matching.');
@@ -308,7 +313,7 @@ class AuthClient
         return $redeemReq->getRequest();
     }
 
-    public function handleCallbackRequest(RequestInterface $request) : AccessToken
+    public function handleCallbackRequest(RequestInterface $request): AccessToken
     {
         $fetchRequest = $this->getFetchAccessTokenWithCodeRequest($request);
         $fetchRequest = $this->embedRequestClientCredentials($fetchRequest);
@@ -318,7 +323,7 @@ class AuthClient
         return $accessToken;
     }
 
-    private function getFetchAccessTokenRequest(array $bodyParams = []) : RequestInterface
+    private function getFetchAccessTokenRequest(array $bodyParams = []): RequestInterface
     {
         $requestFactory = $this->httpFactory->getRequestFactory();
         $request = $requestFactory->createRequest(Methods::POST, $this->tokenEndpoint);
@@ -332,7 +337,7 @@ class AuthClient
         return $request;
     }
 
-    private function getFetchClientAccessTokenRequest(array $scopes = []) : RequestInterface
+    private function getFetchClientAccessTokenRequest(array $scopes = []): RequestInterface
     {
         return $this->getFetchAccessTokenRequest(array(
             'grant_type' => TokenRequestGrantTypes::CLIENT_CREDENTIALS,
@@ -340,7 +345,7 @@ class AuthClient
         ));
     }
 
-    public function fetchClientAccessToken(array $scopes = []) : AccessToken
+    public function fetchClientAccessToken(array $scopes = []): AccessToken
     {
         $scopes = ScopeHelper::merge($this->clientScopes, $scopes);
         $fetchRequest = $this->getFetchClientAccessTokenRequest($scopes);
@@ -354,7 +359,7 @@ class AuthClient
         return $accessToken;
     }
 
-    private function getFetchAccessTokenWithRefreshTokenRequest(string $refreshToken) : RequestInterface
+    private function getFetchAccessTokenWithRefreshTokenRequest(string $refreshToken): RequestInterface
     {
         return $this->getFetchAccessTokenRequest(array(
             'grant_type' => TokenRequestGrantTypes::REFRESH_TOKEN,
@@ -362,7 +367,7 @@ class AuthClient
         ));
     }
 
-    public function fetchAccessTokenWithRefreshToken(string $refreshToken) : AccessToken
+    public function fetchAccessTokenWithRefreshToken(string $refreshToken): AccessToken
     {
         $fetchRequest = $this->getFetchAccessTokenWithRefreshTokenRequest($refreshToken);
         $fetchRequest = $this->embedRequestClientCredentials($fetchRequest);
@@ -391,7 +396,7 @@ class AuthClient
      * @param RequestInterface $request
      * @return RequestInterface|null
      */
-    public function bindAccessToken(RequestInterface $request) : ?RequestInterface
+    public function bindAccessToken(RequestInterface $request): ?RequestInterface
     {
         if (!isset($this->ownerAccessToken) || !$this->ownerAccessToken instanceof AccessToken) {
             throw new LogicException('No access token available');
@@ -408,9 +413,10 @@ class AuthClient
      * @param RequestInterface $request
      * @return RequestInterface|null
      */
-    public function bindClientAccessToken(RequestInterface $request, array $scopes = []) : ?RequestInterface
+    public function bindClientAccessToken(RequestInterface $request, array $scopes = []): ?RequestInterface
     {
-        if (!isset($this->clientAccessToken) ||
+        if (
+            !isset($this->clientAccessToken) ||
             !$this->clientAccessToken instanceof AccessToken ||
             $this->clientAccessToken->isExpired()
         ) {

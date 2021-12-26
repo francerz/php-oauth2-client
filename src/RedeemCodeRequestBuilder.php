@@ -10,7 +10,9 @@ use Psr\Http\Message\RequestInterface;
 
 class RedeemCodeRequestBuilder
 {
+    /** @var AuthClient */
     private $authClient;
+    /** @var string */
     private $code;
 
     public function __construct(AuthClient $authClient = null, string $code = null)
@@ -26,7 +28,7 @@ class RedeemCodeRequestBuilder
         return $new;
     }
 
-    public function getAuthClient() : AuthClient
+    public function getAuthClient(): AuthClient
     {
         return $this->authClient;
     }
@@ -38,12 +40,12 @@ class RedeemCodeRequestBuilder
         return $new;
     }
 
-    public function getCode() : string
+    public function getCode(): string
     {
         return $this->code;
     }
 
-    public function getRequest() : RequestInterface
+    public function getRequest(): RequestInterface
     {
         if (!isset($this->authClient)) {
             throw new \Exception('AuthClient not set');
@@ -53,14 +55,14 @@ class RedeemCodeRequestBuilder
         }
 
         $uri = $this->authClient->getTokenEndpoint();
-        
+
         $request = $this->authClient->getHttpFactory()->getRequestFactory()
             ->createRequest(Methods::POST, $uri);
         $requestBody = array(
-            'grant_type'=> TokenRequestGrantTypes::AUTHORIZATION_CODE,
-            'code'      => $this->code,
+            'grant_type' => TokenRequestGrantTypes::AUTHORIZATION_CODE,
+            'code' => $this->code,
         );
-        
+
         $callbackEndpoint = $this->authClient->getCallbackEndpoint();
         if (isset($callbackEndpoint)) {
             $requestBody['redirect_uri'] = (string)$callbackEndpoint;
