@@ -3,7 +3,6 @@
 namespace Francerz\OAuth2\Client;
 
 use Exception;
-use Fig\Http\Message\RequestMethodInterface;
 use Francerz\OAuth2\AccessToken;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -11,9 +10,8 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
-use RuntimeException;
 
-class ClientParameters
+class OAuth2Client
 {
     #region Atributes
     /** @var string */

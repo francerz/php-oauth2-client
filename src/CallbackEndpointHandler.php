@@ -21,7 +21,7 @@ use Psr\Http\Message\ServerRequestInterface;
 class CallbackEndpointHandler
 {
 
-    private static function checkState(ClientParameters $client, $state)
+    private static function checkState(OAuth2Client $client, $state)
     {
         $stateChecker = $client->getStateManager();
         if (is_null($stateChecker)) {
@@ -33,7 +33,7 @@ class CallbackEndpointHandler
     /**
      * @param string[] $params
      */
-    private static function handleError(ClientParameters $client, array $params)
+    private static function handleError(OAuth2Client $client, array $params)
     {
         if (array_key_exists('state', $params) && !static::checkState($client, $params['state'])) {
             throw new StateMismatchException();
@@ -82,7 +82,7 @@ class CallbackEndpointHandler
         );
     }
 
-    private static function handleCode(ClientParameters $client, array $params)
+    private static function handleCode(OAuth2Client $client, array $params)
     {
         if (array_key_exists('state', $params) && !static::checkState($client, $params['state'])) {
             throw new StateMismatchException();
@@ -98,7 +98,7 @@ class CallbackEndpointHandler
         return $accessToken;
     }
 
-    private static function handleToken(ClientParameters $client, array $params)
+    private static function handleToken(OAuth2Client $client, array $params)
     {
         if (array_key_exists('state', $params) && !static::checkState($client, $params['state'])) {
             throw new StateMismatchException();
@@ -113,7 +113,7 @@ class CallbackEndpointHandler
         return $accessToken;
     }
 
-    public static function handle(ClientParameters $client, ServerRequestInterface $request)
+    public static function handle(OAuth2Client $client, ServerRequestInterface $request)
     {
         $params = UriHelper::getQueryParams($request->getUri());
         if (array_key_exists('error', $params)) {

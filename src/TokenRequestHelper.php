@@ -15,13 +15,13 @@ use Psr\Http\Message\ResponseInterface;
 
 abstract class TokenRequestHelper
 {
-    private static function embedClientCredentials(ClientParameters $client, RequestInterface $request)
+    private static function embedClientCredentials(OAuth2Client $client, RequestInterface $request)
     {
         return $request
             ->withHeader('Authorization', base64_encode("{$client->getClientId()}:{$client->getClientSecret()}"));
     }
 
-    private static function createTokenRequest(ClientParameters $client, array $params)
+    private static function createTokenRequest(OAuth2Client $client, array $params)
     {
         $requestFactory = $client->getRequestFactory();
         if (is_null($requestFactory)) {
@@ -53,13 +53,13 @@ abstract class TokenRequestHelper
     }
 
     /**
-     * @param ClientParameters $client
+     * @param OAuth2Client $client
      * @param string $code
      * @param string|null $verifier Used in PKCE.
      * @return RequestInterface
      */
     public static function createFetchAccessTokenWithCodeRequest(
-        ClientParameters $client,
+        OAuth2Client $client,
         string $code,
         ?string $verifier = null
     ) {
@@ -80,14 +80,14 @@ abstract class TokenRequestHelper
     }
 
     /**
-     * @param ClientParameters $client
+     * @param OAuth2Client $client
      * @param string $username
      * @param string|null $password
      * @param string[]|string|null $scope
      * @return RequestInterface
      */
     public static function createFetchAccesstokenWithPasswordRequest(
-        ClientParameters $client,
+        OAuth2Client $client,
         string $username,
         string $password,
         $scope = []
@@ -106,11 +106,11 @@ abstract class TokenRequestHelper
     }
 
     /**
-     * @param ClientParameters $client
+     * @param OAuth2Client $client
      * @param string[]|string|null $scope
      * @return RequestInterface
      */
-    public static function createFetchAccessTokenWithClientCredentialsRequest(ClientParameters $client, $scope = [])
+    public static function createFetchAccessTokenWithClientCredentialsRequest(OAuth2Client $client, $scope = [])
     {
         $params = [
             'grant_type' => GrantTypesEnum::CLIENT_CREDENTIALS
@@ -125,13 +125,13 @@ abstract class TokenRequestHelper
     }
 
     /**
-     * @param ClientParameters $client
+     * @param OAuth2Client $client
      * @param RefreshToken|string $refreshToken
      * @param string[]|string|null $scope
      * @return RequestInterface
      */
     public static function createFetchAccessTokenWithRefreshTokenRequest(
-        ClientParameters $client,
+        OAuth2Client $client,
         $refreshToken,
         $scope = []
     ) {

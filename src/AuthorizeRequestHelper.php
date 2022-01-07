@@ -12,13 +12,13 @@ use Psr\Http\Message\UriInterface;
 class AuthorizeRequestHelper
 {
     /**
-     * @param ClientParameters $client
+     * @param OAuth2Client $client
      * @param ResponseTypesEnum|string $responseType
      * @param string[]|string $scopes
      * @param string|null $state
      * @return UriInterface
      */
-    public static function createUri(ClientParameters $client, $responseType, $scopes = [], $state = null): UriInterface
+    public static function createUri(OAuth2Client $client, $responseType, $scopes = [], $state = null): UriInterface
     {
         $params = [
             'response_type' => $responseType,
@@ -36,20 +36,20 @@ class AuthorizeRequestHelper
         return UriHelper::withQueryParams($client->getAuthorizationEndpoint(), $params);
     }
 
-    public static function createCodeUri(ClientParameters $client, $scopes = [], $state = null): UriInterface
+    public static function createCodeUri(OAuth2Client $client, $scopes = [], $state = null): UriInterface
     {
         return static::createUri($client, ResponseTypesEnum::AUTHORIZATION_CODE, $scopes, $state);
     }
 
     /**
-     * @param ClientParameters $client
+     * @param OAuth2Client $client
      * @param PKCECode $pkceCode
      * @param string[]|string $scopes
      * @param string|null $state
      * @return UriInterface
      */
     public static function createCodeWithPKCEUri(
-        ClientParameters $client,
+        OAuth2Client $client,
         PKCECode $pkceCode,
         $scopes = [],
         $state = null
@@ -63,7 +63,7 @@ class AuthorizeRequestHelper
         return UriHelper::withQueryParams($uri, $params);
     }
 
-    public static function createTokenUri(ClientParameters $client, $scopes = [], $state = null): UriInterface
+    public static function createTokenUri(OAuth2Client $client, $scopes = [], $state = null): UriInterface
     {
         return static::createUri($client, ResponseTypesEnum::TOKEN, $scopes, $state);
     }
