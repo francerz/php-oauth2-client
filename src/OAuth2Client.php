@@ -39,9 +39,9 @@ class OAuth2Client
     private $stateManager;
     /** @var PKCEManagerInterface|null */
     private $pkceManager;
-    /** @var AccessTokenSaverInterface|null */
+    /** @var OwnerAccessTokenSaverInterface|null */
     private $ownerAcccessTokenSaver;
-    /** @var AccessTokenSaverInterface|null */
+    /** @var ClientAccessTokenSaverInterface|null */
     private $clientAccessTokenSaver;
 
     /** @var AccessToken|null */
@@ -179,7 +179,7 @@ class OAuth2Client
         return $this->pkceManager;
     }
 
-    public function setOwnerAccessTokenSaver(?AccessTokenSaverInterface $saver)
+    public function setOwnerAccessTokenSaver(?OwnerAccessTokenSaverInterface $saver)
     {
         $this->ownerAcccessTokenSaver = $saver;
     }
@@ -189,7 +189,7 @@ class OAuth2Client
         return $this->ownerAcccessTokenSaver;
     }
 
-    public function setClientAccessTokenSaver(?AccessTokenSaverInterface $saver)
+    public function setClientAccessTokenSaver(?ClientAccessTokenSaverInterface $saver)
     {
         $this->clientAccessTokenSaver = $saver;
     }
@@ -205,14 +205,14 @@ class OAuth2Client
     {
         $this->ownerAccessToken = $accessToken;
         if ($autosave && isset($this->ownerAcccessTokenSaver)) {
-            $this->ownerAcccessTokenSaver->saveAccessToken($accessToken);
+            $this->ownerAcccessTokenSaver->saveOwnerAccessToken($accessToken);
         }
     }
 
     public function getOwnerAccessToken(): ?AccessToken
     {
         if (!isset($this->ownerAccessToken) && isset($this->ownerAcccessTokenSaver)) {
-            $this->ownerAccessToken = $this->ownerAcccessTokenSaver->loadAccessToken();
+            $this->ownerAccessToken = $this->ownerAcccessTokenSaver->loadOwnerAccessToken();
         }
         return $this->ownerAccessToken;
     }
@@ -221,14 +221,14 @@ class OAuth2Client
     {
         $this->clientAccessToken = $accessToken;
         if ($autosave && isset($this->clientAccessTokenSaver)) {
-            $this->clientAccessToken = $this->clientAccessTokenSaver->loadAccessToken();
+            $this->clientAccessToken = $this->clientAccessTokenSaver->loadClientAccessToken();
         }
     }
 
     public function getClientAccessToken(): ?AccessToken
     {
         if (!isset($this->clientAccessToken) && isset($this->clientAccessTokenSaver)) {
-            $this->clientAccessToken = $this->clientAccessTokenSaver->loadAccessToken();
+            $this->clientAccessToken = $this->clientAccessTokenSaver->loadClientAccessToken();
         }
         return $this->clientAccessToken;
     }
