@@ -9,6 +9,9 @@ use Francerz\OAuth2\ResponseTypesEnum;
 use Francerz\OAuth2\ScopeHelper;
 use Psr\Http\Message\UriInterface;
 
+/**
+ * @internal
+ */
 class AuthorizeRequestHelper
 {
     /**

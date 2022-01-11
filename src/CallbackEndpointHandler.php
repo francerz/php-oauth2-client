@@ -18,6 +18,9 @@ use Francerz\OAuth2\OAuth2Exception;
 use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * @internal
+ */
 class CallbackEndpointHandler
 {
 
@@ -89,7 +92,7 @@ class CallbackEndpointHandler
         }
         $httpClient = $client->getHttpClient();
         if (is_null($httpClient)) {
-            throw new LogicException("Missing HTTP Client in ClientParams.");
+            throw new LogicException("Missing HTTP Client in OAuth2Client.");
         }
 
         $request = TokenRequestHelper::createFetchAccessTokenWithCodeRequest($client, $params['code']);

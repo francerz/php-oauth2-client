@@ -13,6 +13,9 @@ use Francerz\OAuth2\ScopeHelper;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * @internal
+ */
 abstract class TokenRequestHelper
 {
     private static function embedClientCredentials(OAuth2Client $client, RequestInterface $request)
@@ -25,7 +28,7 @@ abstract class TokenRequestHelper
     {
         $requestFactory = $client->getRequestFactory();
         if (is_null($requestFactory)) {
-            throw new Exception('Missing RequestFactory in Client Parameters.');
+            throw new Exception('Missing RequestFactory in OAuth2Client.');
         }
         $request = $requestFactory
             ->createRequest(RequestMethodInterface::METHOD_POST, $client->getTokenEndpoint())
