@@ -272,6 +272,11 @@ class OAuth2Client
         return $accessToken;
     }
 
+    public function handleCallback(ServerRequestInterface $request, $autosave = true)
+    {
+        return $this->fetchAccessTokenFromRequestCallback($request, $autosave);
+    }
+
     /**
      * @param string $code
      * @param boolean $autosave
