@@ -5,7 +5,8 @@
 /.gitattributes             export-ignore
 /.github                    export-ignore
 /.gitignore                 export-ignore
-/*.cache                    export-ignore
 /.vscode                    export-ignore
+/*.cache                    export-ignore
+/dev                        export-ignore
 /test                       export-ignore
 /phpunit.xml                export-ignore

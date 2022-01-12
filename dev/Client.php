@@ -11,6 +11,7 @@ use Francerz\OAuth2\Client\PKCECode;
 use Francerz\OAuth2\Client\PKCEManagerInterface;
 use Francerz\OAuth2\Client\StateManagerInterface;
 use Francerz\OAuth2\CodeChallengeMethodsEnum;
+use Francerz\OAuth2\PKCEHelper;
 use Psr\Http\Message\UriInterface;
 
 class Client implements
