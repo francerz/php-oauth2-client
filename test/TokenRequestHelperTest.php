@@ -3,7 +3,7 @@
 namespace Francerz\OAuth2\Client\Tests;
 
 use Francerz\Http\HttpFactory;
-use Francerz\Http\Uri;
+use Francerz\OAuth2\Client\Dev\Client;
 use Francerz\OAuth2\Client\OAuth2Client;
 use Francerz\OAuth2\Client\TokenRequestHelper;
 use PHPUnit\Framework\TestCase;
@@ -14,13 +14,7 @@ class TokenRequestHelperTest extends TestCase
     public function __construct($name = null, $data = [], $dataName = '')
     {
         parent::__construct($name, $data, $dataName);
-        $this->client = new OAuth2Client(
-            'abcdef',
-            '123456',
-            new Uri('https://auth.server.com/authorize'),
-            new Uri('https://auth.server.com/token'),
-            new Uri('https://example.com/oauth2/callback')
-        );
+        $this->client = new OAuth2Client(new Client());
         $httpFactory = new HttpFactory();
         $this->client->setRequestFactory($httpFactory);
     }

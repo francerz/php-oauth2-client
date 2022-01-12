@@ -21,7 +21,7 @@ class AuthorizeRequestHelper
      * @param string|null $state
      * @return UriInterface
      */
-    public static function createUri(OAuth2Client $client, $responseType, $scopes = [], $state = null): UriInterface
+    public static function createUri(OAuth2Client $client, $responseType, $scopes = []): UriInterface
     {
         $params = [
             'response_type' => $responseType,
@@ -33,41 +33,34 @@ class AuthorizeRequestHelper
         if (!empty($scopes)) {
             $params['scope'] = ScopeHelper::toString($scopes);
         }
-        if (!empty($state)) {
-            $params['state'] = $state;
+        $stateManager = $client->getStateManager();
+        if (isset($stateManager)) {
+            $params['state'] = $stateManager->generateState();
         }
         return UriHelper::withQueryParams($client->getAuthorizationEndpoint(), $params);
     }
 
-    public static function createCodeUri(OAuth2Client $client, $scopes = [], $state = null): UriInterface
+    public static function createCodeUri(OAuth2Client $client, $scopes = []): UriInterface
     {
-        return static::createUri($client, ResponseTypesEnum::AUTHORIZATION_CODE, $scopes, $state);
-    }
+        $uri = static::createUri($client, ResponseTypesEnum::AUTHORIZATION_CODE, $scopes);
 
-    /**
-     * @param OAuth2Client $client
-     * @param PKCECode $pkceCode
-     * @param string[]|string $scopes
-     * @param string|null $state
-     * @return UriInterface
-     */
-    public static function createCodeWithPKCEUri(
-        OAuth2Client $client,
-        PKCECode $pkceCode,
-        $scopes = [],
-        $state = null
-    ): UriInterface {
-        $uri = static::createCodeUri($client, $scopes, $state);
-        $pkceMethod = $pkceCode->getMethod();
-        $params = ['code_challenge' => PKCEHelper::urlEncode($pkceCode->getCode(), $pkceMethod)];
-        if ($pkceMethod != CodeChallengeMethodsEnum::PLAIN) {
-            $params['code_challenge_method'] = (string)$pkceMethod;
+        $pkceManager = $client->getPKCEManager();
+        if (isset($pkceManager)) {
+            $params = [];
+            $pkceCode = $pkceManager->generatePKCECode();
+            $pkceMethod = $pkceCode->getMethod();
+            $params['code_challenge'] = PKCEHelper::urlEncode($pkceCode->getCode(), $pkceMethod);
+            if ($pkceMethod != CodeChallengeMethodsEnum::PLAIN) {
+                $params['code_challenge_method'] = (string)$pkceMethod;
+            }
+            $uri = UriHelper::withQueryParams($uri, $params);
         }
-        return UriHelper::withQueryParams($uri, $params);
+
+        return $uri;
     }
 
-    public static function createTokenUri(OAuth2Client $client, $scopes = [], $state = null): UriInterface
+    public static function createTokenUri(OAuth2Client $client, $scopes = []): UriInterface
     {
-        return static::createUri($client, ResponseTypesEnum::TOKEN, $scopes, $state);
+        return static::createUri($client, ResponseTypesEnum::TOKEN, $scopes);
     }
 }

@@ -30,7 +30,7 @@ class CallbackEndpointHandler
         if (is_null($stateChecker)) {
             return true;
         }
-        return $stateChecker->checkState($state);
+        return $state === $stateChecker->getState();
     }
 
     /**
@@ -38,7 +38,7 @@ class CallbackEndpointHandler
      */
     private static function handleError(OAuth2Client $client, array $params)
     {
-        if (array_key_exists('state', $params) && !static::checkState($client, $params['state'])) {
+        if (!static::checkState($client, $params['state'] ?? null)) {
             throw new StateMismatchException();
         }
         switch ($params['error']) {
@@ -87,7 +87,7 @@ class CallbackEndpointHandler
 
     private static function handleCode(OAuth2Client $client, array $params)
     {
-        if (array_key_exists('state', $params) && !static::checkState($client, $params['state'])) {
+        if (!static::checkState($client, $params['state'] ?? null)) {
             throw new StateMismatchException();
         }
         $httpClient = $client->getHttpClient();
@@ -103,7 +103,7 @@ class CallbackEndpointHandler
 
     private static function handleToken(OAuth2Client $client, array $params)
     {
-        if (array_key_exists('state', $params) && !static::checkState($client, $params['state'])) {
+        if (!static::checkState($client, $params['state'] ?? null)) {
             throw new StateMismatchException();
         }
         $accessToken = new AccessToken(

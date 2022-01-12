@@ -8,41 +8,29 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\UriFactoryInterface;
-use Psr\Http\Message\UriInterface;
 
 class OAuth2Client
 {
     #region Atributes
-    /** @var string */
-    private $clientId;
-    /** @var string|null */
-    private $clientSecret;
-    /** @var UriInterface|null */
-    private $authorizationEndpoint;
-    /** @var UriInterface|null */
-    private $tokenEndpoint;
-    /** @var UriInterface|null */
-    private $callbackEndpoint;
+    /** @var ClientParametersInterface */
+    private $client;
 
     /** @var ClientInterface|null */
     private $httpClient;
     /** @var RequestFactoryInterface|null */
     private $requestFactory;
-    /** @var UriFactoryInterface|null */
-    private $uriFactory;
 
     /** @var bool */
     private $preferBodyAuthentication = false;
 
+    /** @var ClientAccessTokenSaverInterface|null */
+    private $clientAccessTokenSaver;
+    /** @var OwnerAccessTokenSaverInterface|null */
+    private $ownerAcccessTokenSaver;
     /** @var StateManagerInterface|null */
     private $stateManager;
     /** @var PKCEManagerInterface|null */
     private $pkceManager;
-    /** @var OwnerAccessTokenSaverInterface|null */
-    private $ownerAcccessTokenSaver;
-    /** @var ClientAccessTokenSaverInterface|null */
-    private $clientAccessTokenSaver;
 
     /** @var AccessToken|null */
     private $ownerAccessToken;
@@ -50,80 +38,82 @@ class OAuth2Client
     private $clientAccessToken;
     #endregion
 
+    /**
+     * Undocumented function
+     *
+     * @param ClientParametersInterface $client
+     * @param ClientInterface|null $httpClient
+     *        Used to fetch Access Tokens to Token Endpoint.
+     *
+     *        Not required for Authorize Requests.
+     * @param RequestFactoryInterface|null $requestFactory
+     *        Used to fetch Access Tokens to Token Endpoint.
+     *
+     *        Not required for Authorize Requests.
+     * @param ClientAccessTokenSaverInterface|null $clientSaver
+     *        Used to store Client Access Token.
+     * @param OwnerAccessTokenSaverInterface|null $ownerSaver
+     *        Used to store Resources' Owner Access Token.
+     * @param StateManagerInterface|null $stateManager
+     *        Generates and checks State attribute which is used to prevent
+     *        CSRF (Cross-Site Resource Forgery)
+     * @param PKCEManagerInterface|null $pkceManager
+     *        Generates and stores Code Challenge and Verifier to prevent
+     *        Authorization Code interception attacks.
+     */
     public function __construct(
-        string $clientId,
-        ?string $clientSecret = null,
-        ?UriInterface $authorizationEndpoint = null,
-        ?UriInterface $tokenEndpoint = null,
-        ?UriInterface $callbackEndpoint = null
+        ClientParametersInterface $client,
+        ?ClientInterface $httpClient = null,
+        ?RequestFactoryInterface $requestFactory = null,
+        ?ClientAccessTokenSaverInterface $clientSaver = null,
+        ?OwnerAccessTokenSaverInterface $ownerSaver = null,
+        ?StateManagerInterface $stateManager = null,
+        ?PKCEManagerInterface $pkceManager = null
     ) {
-        $this->clientId = $clientId;
-        $this->clientSecret = $clientSecret;
-        $this->authorizationEndpoint = $authorizationEndpoint;
-        $this->tokenEndpoint = $tokenEndpoint;
-        $this->callbackEndpoint = $callbackEndpoint;
+        $this->client = $client;
+        $this->httpClient = $httpClient;
+        $this->requestFactory = $requestFactory;
+        $this->clientAccessTokenSaver = $clientSaver;
+        $this->ownerAcccessTokenSaver = $ownerSaver;
+        $this->stateManager = $stateManager;
+        $this->pkceManager = $pkceManager;
     }
 
     #region ClientParameters
-    public function setClientId(string $clientId)
-    {
-        $this->clientId = $clientId;
-    }
-
     public function getClientId()
     {
-        return $this->clientId;
-    }
-
-    public function setClientSecret(?string $clientSecret)
-    {
-        $this->clientSecret = $clientSecret;
+        return $this->client->getClientId();
     }
 
     public function getClientSecret()
     {
-        return $this->clientSecret;
-    }
-
-    public function setAuthorizationEndpoint(?UriInterface $authorizationEndpoint)
-    {
-        $this->authorizationEndpoint = $authorizationEndpoint;
+        return $this->client->getClientSecret();
     }
 
     public function getAuthorizationEndpoint()
     {
-        return $this->authorizationEndpoint;
-    }
-
-    public function setTokenEndpoint(?UriInterface $tokenEndpoint)
-    {
-        $this->tokenEndpoint = $tokenEndpoint;
+        return $this->client->getAuthorizationEndpoint();
     }
 
     public function getTokenEndpoint()
     {
-        return $this->tokenEndpoint;
-    }
-
-    public function setCallbackEndpoint(?UriInterface $callbackEndpoint)
-    {
-        $this->callbackEndpoint = $callbackEndpoint;
+        return $this->client->getTokenEndpoint();
     }
 
     public function getCallbackEndpoint()
     {
-        return $this->callbackEndpoint;
+        return $this->client->getCallbackEndpoint();
     }
 
-    public function preferBodyAuthentication(bool $prefer = true)
-    {
-        $this->preferBodyAuthentication = $prefer;
-    }
+    // public function preferBodyAuthentication(bool $prefer = true)
+    // {
+    //     $this->preferBodyAuthentication = $prefer;
+    // }
 
-    public function isBodyAuthenticationPreferred()
-    {
-        return $this->preferBodyAuthentication;
-    }
+    // public function isBodyAuthenticationPreferred()
+    // {
+    //     return $this->preferBodyAuthentication;
+    // }
     #endregion
 
     #region HTTP Utilities
@@ -146,19 +136,9 @@ class OAuth2Client
     {
         return $this->requestFactory;
     }
-
-    public function setUriFactory(UriFactoryInterface $uriFactory)
-    {
-        $this->uriFactory = $uriFactory;
-    }
-
-    public function getUriFactory()
-    {
-        return $this->uriFactory;
-    }
     #endregion
 
-    #region Decorators
+    #region
     public function setStateManager(?StateManagerInterface $stateManager)
     {
         $this->stateManager = $stateManager;
@@ -209,9 +189,9 @@ class OAuth2Client
         }
     }
 
-    public function getOwnerAccessToken(): ?AccessToken
+    public function getOwnerAccessToken($autoload = true): ?AccessToken
     {
-        if (!isset($this->ownerAccessToken) && isset($this->ownerAcccessTokenSaver)) {
+        if ($autoload && !isset($this->ownerAccessToken) && isset($this->ownerAcccessTokenSaver)) {
             $this->ownerAccessToken = $this->ownerAcccessTokenSaver->loadOwnerAccessToken();
         }
         return $this->ownerAccessToken;
@@ -225,9 +205,9 @@ class OAuth2Client
         }
     }
 
-    public function getClientAccessToken(): ?AccessToken
+    public function getClientAccessToken($autoload = true): ?AccessToken
     {
-        if (!isset($this->clientAccessToken) && isset($this->clientAccessTokenSaver)) {
+        if ($autoload && !isset($this->clientAccessToken) && isset($this->clientAccessTokenSaver)) {
             $this->clientAccessToken = $this->clientAccessTokenSaver->loadClientAccessToken();
         }
         return $this->clientAccessToken;
@@ -237,28 +217,12 @@ class OAuth2Client
     #region Authorization Uri Creators
     public function createAuthorizationCodeUri($scopes = [])
     {
-        $state = null;
-        if (isset($this->stateManager)) {
-            $state = $this->stateManager->generateState();
-        }
-        if (isset($this->pkceManager)) {
-            return AuthorizeRequestHelper::createCodeWithPKCEUri(
-                $this,
-                $this->pkceManager->generateCode(),
-                $scopes,
-                $state
-            );
-        }
-        return AuthorizeRequestHelper::createCodeUri($this, $scopes, $state);
+        return AuthorizeRequestHelper::createCodeUri($this, $scopes);
     }
 
     public function createImplicitAuthorizationUri($scopes = [])
     {
-        $state = null;
-        if (isset($this->stateManager)) {
-            $state = $this->stateManager->generateState();
-        }
-        return AuthorizeRequestHelper::createTokenUri($this, $scopes, $state);
+        return AuthorizeRequestHelper::createTokenUri($this, $scopes);
     }
     #endregion
 
@@ -288,7 +252,7 @@ class OAuth2Client
     {
         $verifier = null;
         if (isset($this->pkceManager)) {
-            $verifier = $this->pkceManager->getCode()->getCode();
+            $verifier = $this->pkceManager->getPKCECode()->getCode();
         }
         $request = TokenRequestHelper::createFetchAccessTokenWithCodeRequest($this, $code, $verifier);
         $response = $this->getHttpClient()->sendRequest($request);

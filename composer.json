@@ -8,6 +8,11 @@
             "Francerz\\OAuth2\\Client\\" : "src"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Francerz\\OAuth2\\Client\\Dev\\" : "dev"
+        }
+    },
     "require": {
         "psr/http-message": "^1.0",
         "psr/http-client": "^1.0",
