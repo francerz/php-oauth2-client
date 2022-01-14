@@ -63,8 +63,7 @@ abstract class TokenRequestHelper
      */
     public static function createFetchAccessTokenWithCodeRequest(
         OAuth2Client $client,
-        string $code,
-        ?string $verifier = null
+        string $code
     ) {
         $params = [
             'grant_type' => GrantTypesEnum::AUTHORIZATION_CODE,
@@ -74,8 +73,12 @@ abstract class TokenRequestHelper
         if (!is_null($callbackEndpoint)) {
             $params['redirect_uri'] = (string)$callbackEndpoint;
         }
-        if (!is_null($verifier)) {
-            $params['code_verifier'] = $verifier;
+        $pkceManager = $client->getPKCEManager();
+        if (isset($pkceManager)) {
+            $pkceCode = $pkceManager->getPKCECode();
+            if (!is_null($pkceCode)) {
+                $params['code_verifier'] = $pkceCode->getCode();
+            }
         }
         $request = static::createTokenRequest($client, $params);
         $request = static::embedClientCredentials($client, $request);

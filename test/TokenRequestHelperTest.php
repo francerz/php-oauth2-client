@@ -14,7 +14,8 @@ class TokenRequestHelperTest extends TestCase
     public function __construct($name = null, $data = [], $dataName = '')
     {
         parent::__construct($name, $data, $dataName);
-        $this->client = new OAuth2Client(new Client());
+        $client = new Client();
+        $this->client = new OAuth2Client($client, null, null, null, null, null, $client);
         $httpFactory = new HttpFactory();
         $this->client->setRequestFactory($httpFactory);
     }
@@ -23,8 +24,7 @@ class TokenRequestHelperTest extends TestCase
     {
         $request = TokenRequestHelper::createFetchAccessTokenWithCodeRequest(
             $this->client,
-            'a1b2c3d4e5',
-            'z9y8x7'
+            'a1b2c3d4e5'
         );
         $this->assertEquals('YWJjZGVmOjEyMzQ1Ng==', $request->getHeaderLine('Authorization'));
         $this->assertEquals('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
@@ -32,7 +32,7 @@ class TokenRequestHelperTest extends TestCase
             'grant_type=authorization_code' .
             '&code=a1b2c3d4e5' .
             '&redirect_uri=https%3A%2F%2Fexample.com%2Foauth2%2Fcallback' .
-            '&code_verifier=z9y8x7';
+            '&code_verifier=A1B2C3D4E5F6';
         $this->assertEquals($expectedBody, (string)$request->getBody());
     }
 
