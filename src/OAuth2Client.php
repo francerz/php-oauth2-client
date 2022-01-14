@@ -21,7 +21,7 @@ class OAuth2Client
     private $requestFactory;
 
     /** @var bool */
-    private $preferBodyAuthentication = false;
+    // private $preferBodyAuthentication = false;
 
     /** @var ClientAccessTokenSaverInterface|null */
     private $clientAccessTokenSaver;
@@ -41,7 +41,7 @@ class OAuth2Client
     /**
      * Undocumented function
      *
-     * @param ClientParametersInterface $client
+     * @param OAuth2ClientInterface $client
      * @param ClientInterface|null $httpClient
      *        Used to fetch Access Tokens to Token Endpoint.
      *
@@ -62,7 +62,7 @@ class OAuth2Client
      *        Authorization Code interception attacks.
      */
     public function __construct(
-        ClientParametersInterface $client,
+        OAuth2ClientInterface $client,
         ?ClientInterface $httpClient = null,
         ?RequestFactoryInterface $requestFactory = null,
         ?ClientAccessTokenSaverInterface $clientSaver = null,

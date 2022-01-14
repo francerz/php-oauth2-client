@@ -4,7 +4,7 @@ namespace Francerz\OAuth2\Client;
 
 use Psr\Http\Message\UriInterface;
 
-interface ClientParametersInterface
+interface OAuth2ClientInterface
 {
     public function getClientId(): string;
     public function getClientSecret(): ?string;

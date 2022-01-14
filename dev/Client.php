@@ -5,17 +5,16 @@ namespace Francerz\OAuth2\Client\Dev;
 use Francerz\Http\Uri;
 use Francerz\OAuth2\AccessToken;
 use Francerz\OAuth2\Client\ClientAccessTokenSaverInterface;
-use Francerz\OAuth2\Client\ClientParametersInterface;
+use Francerz\OAuth2\Client\OAuth2ClientInterface;
 use Francerz\OAuth2\Client\OwnerAccessTokenSaverInterface;
 use Francerz\OAuth2\Client\PKCECode;
 use Francerz\OAuth2\Client\PKCEManagerInterface;
 use Francerz\OAuth2\Client\StateManagerInterface;
 use Francerz\OAuth2\CodeChallengeMethodsEnum;
-use Francerz\OAuth2\PKCEHelper;
 use Psr\Http\Message\UriInterface;
 
 class Client implements
-    ClientParametersInterface,
+    OAuth2ClientInterface,
     ClientAccessTokenSaverInterface,
     OwnerAccessTokenSaverInterface,
     PKCEManagerInterface,
