@@ -21,7 +21,7 @@ abstract class TokenRequestHelper
     private static function embedClientCredentials(OAuth2Client $client, RequestInterface $request)
     {
         return $request
-            ->withHeader('Authorization', base64_encode("{$client->getClientId()}:{$client->getClientSecret()}"));
+            ->withHeader('Authorization', 'Basic ' . base64_encode("{$client->getClientId()}:{$client->getClientSecret()}"));
     }
 
     private static function createTokenRequest(OAuth2Client $client, array $params)

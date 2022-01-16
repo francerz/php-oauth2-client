@@ -26,7 +26,7 @@ class TokenRequestHelperTest extends TestCase
             $this->client,
             'a1b2c3d4e5'
         );
-        $this->assertEquals('YWJjZGVmOjEyMzQ1Ng==', $request->getHeaderLine('Authorization'));
+        $this->assertEquals('Basic YWJjZGVmOjEyMzQ1Ng==', $request->getHeaderLine('Authorization'));
         $this->assertEquals('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
         $expectedBody =
             'grant_type=authorization_code' .
@@ -44,7 +44,7 @@ class TokenRequestHelperTest extends TestCase
             'a1b2c3d4e5',
             ['scp1', 'scp2']
         );
-        $this->assertEquals('YWJjZGVmOjEyMzQ1Ng==', $request->getHeaderLine('Authorization'));
+        $this->assertEquals('Basic YWJjZGVmOjEyMzQ1Ng==', $request->getHeaderLine('Authorization'));
         $this->assertEquals('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
         $expectedBody =
             'grant_type=password' .
@@ -60,7 +60,7 @@ class TokenRequestHelperTest extends TestCase
             $this->client,
             ['scp1', 'scp2']
         );
-        $this->assertEquals('YWJjZGVmOjEyMzQ1Ng==', $request->getHeaderLine('Authorization'));
+        $this->assertEquals('Basic YWJjZGVmOjEyMzQ1Ng==', $request->getHeaderLine('Authorization'));
         $this->assertEquals('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
         $expectedBody =
             'grant_type=client_credentials' .
@@ -75,7 +75,7 @@ class TokenRequestHelperTest extends TestCase
             'A1b9C3d8E5f7',
             ['scp1', 'scp2']
         );
-        $this->assertEquals('YWJjZGVmOjEyMzQ1Ng==', $request->getHeaderLine('Authorization'));
+        $this->assertEquals('Basic YWJjZGVmOjEyMzQ1Ng==', $request->getHeaderLine('Authorization'));
         $this->assertEquals('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
         $expectedBody =
             'grant_type=refresh_token' .
