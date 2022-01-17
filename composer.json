@@ -16,7 +16,7 @@
     "require": {
         "psr/http-message": "^1.0",
         "psr/http-client": "^1.0",
-        "francerz/oauth2-core": "dev-master",
+        "francerz/oauth2-core": "^0.3",
         "francerz/php-power-data": "^0.1.0"
 
     },
