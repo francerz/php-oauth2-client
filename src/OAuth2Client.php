@@ -4,6 +4,7 @@ namespace Francerz\OAuth2\Client;
 
 use Exception;
 use Francerz\OAuth2\AccessToken;
+use Francerz\OAuth2\Client\Exceptions\MissingOwnerAccessTokenException;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
@@ -26,7 +27,7 @@ class OAuth2Client
     /** @var ClientAccessTokenSaverInterface|null */
     private $clientAccessTokenSaver;
     /** @var OwnerAccessTokenSaverInterface|null */
-    private $ownerAcccessTokenSaver;
+    private $ownerAccessTokenSaver;
     /** @var StateManagerInterface|null */
     private $stateManager;
     /** @var PKCEManagerInterface|null */
@@ -74,7 +75,7 @@ class OAuth2Client
         $this->httpClient = $httpClient;
         $this->requestFactory = $requestFactory;
         $this->clientAccessTokenSaver = $clientSaver;
-        $this->ownerAcccessTokenSaver = $ownerSaver;
+        $this->ownerAccessTokenSaver = $ownerSaver;
         $this->stateManager = $stateManager;
         $this->pkceManager = $pkceManager;
     }
@@ -161,12 +162,12 @@ class OAuth2Client
 
     public function setOwnerAccessTokenSaver(?OwnerAccessTokenSaverInterface $saver)
     {
-        $this->ownerAcccessTokenSaver = $saver;
+        $this->ownerAccessTokenSaver = $saver;
     }
 
     public function getOwnerAccessTokenSaver()
     {
-        return $this->ownerAcccessTokenSaver;
+        return $this->ownerAccessTokenSaver;
     }
 
     public function setClientAccessTokenSaver(?ClientAccessTokenSaverInterface $saver)
@@ -184,15 +185,15 @@ class OAuth2Client
     public function setOwnerAccessToken(AccessToken $accessToken, $autosave = false)
     {
         $this->ownerAccessToken = $accessToken;
-        if ($autosave && isset($this->ownerAcccessTokenSaver)) {
-            $this->ownerAcccessTokenSaver->saveOwnerAccessToken($accessToken);
+        if ($autosave && isset($this->ownerAccessTokenSaver)) {
+            $this->ownerAccessTokenSaver->saveOwnerAccessToken($accessToken);
         }
     }
 
     public function getOwnerAccessToken($autoload = true): ?AccessToken
     {
-        if ($autoload && !isset($this->ownerAccessToken) && isset($this->ownerAcccessTokenSaver)) {
-            $this->ownerAccessToken = $this->ownerAcccessTokenSaver->loadOwnerAccessToken();
+        if ($autoload && !isset($this->ownerAccessToken) && isset($this->ownerAccessTokenSaver)) {
+            $this->ownerAccessToken = $this->ownerAccessTokenSaver->loadOwnerAccessToken();
         }
         return $this->ownerAccessToken;
     }
@@ -201,7 +202,7 @@ class OAuth2Client
     {
         $this->clientAccessToken = $accessToken;
         if ($autosave && isset($this->clientAccessTokenSaver)) {
-            $this->clientAccessToken = $this->clientAccessTokenSaver->loadClientAccessToken();
+            $this->clientAccessTokenSaver->saveClientAccessToken($accessToken);
         }
     }
 
@@ -321,7 +322,7 @@ class OAuth2Client
     {
         $accessToken = $this->getOwnerAccessToken();
         if (!isset($accessToken)) {
-            throw new Exception("Missing Owner Access Token");
+            throw new MissingOwnerAccessTokenException("Missing Owner Access Token");
         }
         if ($accessToken->isExpired()) {
             $accessToken = $this->refreshAccessToken($accessToken);
