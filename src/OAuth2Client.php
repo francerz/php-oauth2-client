@@ -118,6 +118,11 @@ class OAuth2Client
     #endregion
 
     #region HTTP Utilities
+    public function getClient()
+    {
+        return $this->client;
+    }
+
     public function setHttpClient(ClientInterface $httpClient)
     {
         $this->httpClient = $httpClient;
