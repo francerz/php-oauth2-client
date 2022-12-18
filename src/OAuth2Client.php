@@ -22,7 +22,7 @@ class OAuth2Client
     private $requestFactory;
 
     /** @var bool */
-    // private $preferBodyAuthentication = false;
+    private $preferBodyAuthentication = false;
 
     /** @var ClientAccessTokenSaverInterface|null */
     private $clientAccessTokenSaver;
@@ -106,15 +106,15 @@ class OAuth2Client
         return $this->client->getCallbackEndpoint();
     }
 
-    // public function preferBodyAuthentication(bool $prefer = true)
-    // {
-    //     $this->preferBodyAuthentication = $prefer;
-    // }
+    public function preferBodyAuthentication(bool $prefer = true)
+    {
+        $this->preferBodyAuthentication = $prefer;
+    }
 
-    // public function isBodyAuthenticationPreferred()
-    // {
-    //     return $this->preferBodyAuthentication;
-    // }
+    public function isBodyAuthenticationPreferred()
+    {
+        return $this->preferBodyAuthentication;
+    }
     #endregion
 
     #region HTTP Utilities
@@ -332,7 +332,7 @@ class OAuth2Client
         if ($accessToken->isExpired()) {
             $accessToken = $this->refreshAccessToken($accessToken);
         }
-        return $request->withHeader('Authorization', (string)$accessToken);
+        return $request->withAddedHeader('Authorization', (string)$accessToken);
     }
 
     public function bindClientAccessToken(RequestInterface $request): RequestInterface
@@ -341,7 +341,7 @@ class OAuth2Client
         if (!isset($accessToken) || $accessToken->isExpired()) {
             $accessToken = $this->fetchAccessTokenWithClientCredentials();
         }
-        return $request->withHeader('Authorization', (string)$accessToken);
+        return $request->withAddedHeader('Authorization', (string)$accessToken);
     }
     #endregion
 }

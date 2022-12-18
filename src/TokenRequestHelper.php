@@ -18,24 +18,26 @@ use Psr\Http\Message\ResponseInterface;
  */
 abstract class TokenRequestHelper
 {
-    private static function embedClientCredentials(OAuth2Client $client, RequestInterface $request)
-    {
-        return $request->withHeader(
-            'Authorization',
-            'Basic ' . base64_encode("{$client->getClientId()}:{$client->getClientSecret()}")
-        );
-    }
-
     private static function createTokenRequest(OAuth2Client $client, array $params)
     {
         $requestFactory = $client->getRequestFactory();
         if (is_null($requestFactory)) {
             throw new Exception('Missing RequestFactory in OAuth2Client.');
         }
+        if ($client->isBodyAuthenticationPreferred()) {
+            $params['client_id'] = $client->getClientId();
+            $params['client_secret'] = $client->getClientSecret();
+        }
         $request = $requestFactory
             ->createRequest(RequestMethodInterface::METHOD_POST, $client->getTokenEndpoint())
             ->withHeader('Content-Type', MediaTypes::APPLICATION_X_WWW_FORM_URLENCODED);
         $request->getBody()->write(http_build_query($params));
+        if (!$client->isBodyAuthenticationPreferred()) {
+            $request = $request->withHeader(
+                'Authorization',
+                'Basic ' . base64_encode("{$client->getClientId()}:{$client->getClientSecret()}")
+            );
+        }
         return $request;
     }
 
@@ -60,7 +62,6 @@ abstract class TokenRequestHelper
     /**
      * @param OAuth2Client $client
      * @param string $code
-     * @param string|null $verifier Used in PKCE.
      * @return RequestInterface
      */
     public static function createFetchAccessTokenWithCodeRequest(
@@ -83,7 +84,6 @@ abstract class TokenRequestHelper
             }
         }
         $request = static::createTokenRequest($client, $params);
-        $request = static::embedClientCredentials($client, $request);
         return $request;
     }
 
@@ -109,7 +109,6 @@ abstract class TokenRequestHelper
             $params['scope'] = ScopeHelper::toString($scope);
         }
         $request = static::createTokenRequest($client, $params);
-        $request = static::embedClientCredentials($client, $request);
         return $request;
     }
 
@@ -118,8 +117,10 @@ abstract class TokenRequestHelper
      * @param string[]|string|null $scope
      * @return RequestInterface
      */
-    public static function createFetchAccessTokenWithClientCredentialsRequest(OAuth2Client $client, $scope = [])
-    {
+    public static function createFetchAccessTokenWithClientCredentialsRequest(
+        OAuth2Client $client,
+        $scope = []
+    ) {
         $params = [
             'grant_type' => GrantTypesEnum::CLIENT_CREDENTIALS
         ];
@@ -128,7 +129,6 @@ abstract class TokenRequestHelper
         }
 
         $request = static::createTokenRequest($client, $params);
-        $request = static::embedClientCredentials($client, $request);
         return $request;
     }
 
@@ -151,7 +151,6 @@ abstract class TokenRequestHelper
             $params['scope'] = ScopeHelper::toString($scope);
         }
         $request = static::createTokenRequest($client, $params);
-        $request = static::embedClientCredentials($client, $request);
         return $request;
     }
 }
