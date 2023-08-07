@@ -8,4 +8,5 @@ interface ClientAccessTokenSaverInterface
 {
     public function loadClientAccessToken(): ?AccessToken;
     public function saveClientAccessToken(AccessToken $accessToken);
+    public function discardClientAccessToken();
 }

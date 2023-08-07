@@ -8,4 +8,5 @@ interface OwnerAccessTokenSaverInterface
 {
     public function loadOwnerAccessToken(): ?AccessToken;
     public function saveOwnerAccessToken(AccessToken $accessToken);
+    public function discardOwnerAccessToken();
 }

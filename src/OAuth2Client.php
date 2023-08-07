@@ -203,6 +203,14 @@ class OAuth2Client
         return $this->ownerAccessToken;
     }
 
+    public function unsetOwnerAccessToken($discard = true)
+    {
+        $this->ownerAccessToken = null;
+        if ($discard) {
+            $this->ownerAccessTokenSaver->discardOwnerAccessToken();
+        }
+    }
+
     public function setClientAccessToken(AccessToken $accessToken, $autosave = false)
     {
         $this->clientAccessToken = $accessToken;
@@ -217,6 +225,14 @@ class OAuth2Client
             $this->clientAccessToken = $this->clientAccessTokenSaver->loadClientAccessToken();
         }
         return $this->clientAccessToken;
+    }
+
+    public function unsetClientAccessToken($discard = true)
+    {
+        $this->clientAccessToken = null;
+        if ($discard) {
+            $this->clientAccessTokenSaver->discardClientAccessToken();
+        }
     }
     #endregion
 
@@ -304,7 +320,7 @@ class OAuth2Client
         $response = $this->getHttpClient()->sendRequest($request);
         $accessToken = TokenRequestHelper::getAccessTokenFromResponse($response);
         if (is_null($accessToken->getRefreshToken())) {
-            $accessToken->setRefreshToken($refreshToken);
+            $accessToken = $accessToken->withRefreshToken($refreshToken);
         }
         if ($autosave) {
             $this->setOwnerAccessToken($accessToken, true);
